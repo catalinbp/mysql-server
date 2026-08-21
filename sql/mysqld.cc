@@ -925,6 +925,7 @@ MySQL clients support the protocol:
 #include "thr_lock.h"
 #include "thr_mutex.h"
 #include "typelib.h"
+#include "vector-common/vector_distance.h"  // init_vector_distance_functions
 #include "violite.h"
 
 #ifdef WITH_PERFSCHEMA_STORAGE_ENGINE
@@ -3056,8 +3057,7 @@ static PasswdValue check_user(const char *user) {
   if (tmp_user_info.IsVoid()) {
     // Allow a numeric uid to be used
     const char *pos;
-    for (pos = user; my_isdigit(mysqld_charset, *pos); pos++)
-      ;
+    for (pos = user; my_isdigit(mysqld_charset, *pos); pos++);
     if (*pos)  // Not numeric id
       goto err;
 
@@ -7845,8 +7845,8 @@ static int setup_error_log_components() {
 
         goto failure;
       } /* purecov: end */
-    }   // value was OK, but could not be set
-        // If we arrive here, the value was OK, and was set successfully.
+    }  // value was OK, but could not be set
+       // If we arrive here, the value was OK, and was set successfully.
   } else {
     /*
       We were given an illegal value at start-up, so the default was
@@ -8119,6 +8119,7 @@ static int init_server_components() {
     We need to call each of these following functions to ensure that
     all things are initialized so that unireg_abort() doesn't fail
   */
+  init_vector_distance_functions();
   mdl_init();
   partitioning_init();
   if (table_def_init() || hostname_cache_init(host_cache_size))
@@ -8193,6 +8194,14 @@ static int init_server_components() {
     if no issues were encountered.
   */
   if (setup_error_log_components()) unireg_abort(MYSQLD_ABORT_EXIT);
+
+  if (!is_help_or_validate_option()) {
+    char vector_distance_msg[256];
+    vector_distance_dispatch_description(vector_distance_msg,
+                                         sizeof(vector_distance_msg));
+    LogErr(INFORMATION_LEVEL, ER_VECTOR_DISTANCE_SIMD_DISPATCH,
+           vector_distance_msg);
+  }
 
   if (MDL_context_backup_manager::init()) {
     LogErr(ERROR_LEVEL, ER_OOM);

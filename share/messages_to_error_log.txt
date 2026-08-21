@@ -13539,6 +13539,9 @@ ER_DD_DOWNGRADE
 ER_INVALID_SERVER_UPGRADE_SKIPS_LTS_LINEAGE
   eng "Invalid MySQL server upgrade: Cannot upgrade from %u to %u. Target MySQL server version belongs to a compatibility lineage whose previous LTS is %u, not %u."
 
+ER_VECTOR_DISTANCE_SIMD_DISPATCH
+  eng "For VECTOR_DISTANCE using %s"
+
 #
 # End of "9.7 cal-ver compatibility lineage (starts from 26.7)" messages intended to be written to the server error log.
 #
